@@ -1,6 +1,6 @@
 name: MySQList
 version: 1.4.2
-main: com.huskehhh.MySQList.MySQList
+main: com.huskehhh.mysql.MySQList
 author: -_Husky_-
 description: MySQL Whitelisting plugin
 commands:

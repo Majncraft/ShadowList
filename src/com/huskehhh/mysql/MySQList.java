@@ -1,4 +1,4 @@
-package com.huskehhh.mysqlist;
+package com.huskehhh.mysql;
 
 import com.huskehhh.mysql.mysql.MySQL;
 import net.md_5.bungee.api.ChatColor;
