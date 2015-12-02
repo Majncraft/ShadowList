@@ -1,0 +1,12 @@
+name: MySQList
+version: 1.4.2
+main: com.huskehhh.mysqlist.MySQList
+author: -_Husky_-
+description: MySQL Whitelisting plugin
+commands:
+  sqlist:
+    description:
+    usage:
+  sl:
+    description:
+    usage:
