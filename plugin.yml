@@ -1,15 +1,9 @@
 name: ShadowList
-version: 1.0
+version: 1.0-SNAPSHOT
 main: net.teamshadowmc.shadowlist.ShadowList
 author: ["Fayettemat", "-_Husky_-"]
 description: MySQL Whitelisting plugin
 commands:
-  sqlist:
-    description:
-    usage:
   wl:
-   description:
-   usage:
-  shadowlist:
-    description:
-    usage:
+   description: Whitelist replacement command
+   usage: See /wl help for usage.

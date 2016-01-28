@@ -2,10 +2,10 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
-    <groupId>com.huskehhh.MySQList</groupId>
-    <artifactId>MySQList</artifactId>
+    <groupId>net.teamshadowmc.shadowlist</groupId>
+    <artifactId>ShadowList</artifactId>
     <packaging>jar</packaging>
-    <name>MySQList</name>
+    <name>ShadowList</name>
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <main.class>net.teamshadowmc.shadowlist.ShadowList</main.class>
@@ -63,6 +63,6 @@
         </repository>
     </repositories>
     <description>MySQL Whitelisting plugin</description>
-    <url>http://teamshadowmc.net/</url>
+    <url>https://tc.mcflux.net/</url>
     <version>1.0.0</version>
 </project>

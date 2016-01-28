@@ -26,12 +26,14 @@ public class ShadowList extends JavaPlugin implements Listener {
     public static YamlConfiguration config = YamlConfiguration.loadConfiguration(new File("plugins/ShadowList/config.yml"));
 
     public static String PluginName = "ShadowList";
+    public static String PluginVersion;
     public static String SQLClosed =  String.format("[%s] MySQL connection was closed. Reopening.", PluginName);
 
 
     private static MySQL mysql;
 
     private static String SQLDatabase;
+    private static String SQLPrefix;
     private static String SQLHostname;
     private static String SQLPort;
     private static String SQLUser;
@@ -50,15 +52,18 @@ public class ShadowList extends JavaPlugin implements Listener {
         if (getConfig().getBoolean("whitelist.enabled")) {
             wlEnabled = true;
         }
-        SQLDatabase = config.getString("MySQL.database");
-        SQLHostname = config.getString("MySQL.hostname");
-        SQLPort = config.getString("MySQL.port");
-        SQLUser = config.getString("MySQL.username");
-        SQLPass = config.getString("MySQL.password");
+        reloadConfig();
+        SQLDatabase = getConfig().getString("MySQL.database");
+        SQLPrefix = getConfig().getString("MySQL.prefix");
+        SQLHostname = getConfig().getString("MySQL.hostname");
+        SQLPort= getConfig().getString("MySQL.port");
+        SQLUser = getConfig().getString("MySQL.username");
+        SQLPass = getConfig().getString("MySQL.password");
 
         try {
             mysql = new MySQL(SQLHostname,  SQLPort, SQLDatabase, SQLUser, SQLPass);
             mysql.openConnection();
+            createTable();
         } catch (SQLException ex) {
             ex.printStackTrace();
         } catch (ClassNotFoundException ex) {
@@ -75,7 +80,38 @@ public class ShadowList extends JavaPlugin implements Listener {
             ex.printStackTrace();
         }
     }
+    public void reloadConf() {
+        reloadConfig();
+        SQLDatabase = getConfig().getString("MySQL.database");
+        SQLPrefix = getConfig().getString("MySQL.prefix");
+        SQLHostname = getConfig().getString("MySQL.hostname");
+        SQLPort= getConfig().getString("MySQL.port");
+        SQLUser = getConfig().getString("MySQL.username");
+        SQLPass = getConfig().getString("MySQL.password");
 
+        createTable();
+    }
+    private void createTable() {
+        final String createSQL = String.format("CREATE TABLE IF NOT EXISTS `%s_whitelist` (`id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,`uuid` varchar(36) DEFAULT NULL,`name` varchar(36) NOT NULL, PRIMARY KEY (`id`), UNIQUE KEY `id` (`id`)) ENGINE=InnoDB AUTO_INCREMENT=7 DEFAULT CHARSET=utf8", SQLPrefix);
+        final BukkitScheduler localScheduler = getServer().getScheduler();
+        localScheduler.runTaskAsynchronously(this, new BukkitRunnable() {
+            @Override
+            public void run() {
+                try {
+                    if (!mysql.checkConnection()) {
+                        getLogger().warning(SQLClosed);
+                        mysql.openConnection();
+                    }
+                    mysql.updateSQL(createSQL);
+                } catch (SQLException ex) {
+                    ex.printStackTrace();
+                } catch (ClassNotFoundException ex) {
+                    ex.printStackTrace();
+                }
+            }
+        });
+
+    }
     private void createConfig() {
         boolean exists = new File("plugins/ShadowList/config.yml").exists();
 
@@ -85,6 +121,7 @@ public class ShadowList extends JavaPlugin implements Listener {
             config.set("MySQL.hostname", "localhost");
             config.set("MySQL.port", "3306");
             config.set("MySQL.database", "shadowlist");
+            config.set("MySQL.prefix", "mc");
             config.set("MySQL.username", "shadowlist");
             config.set("MySQL.password", "password");
             config.set("whitelist.enabled", false);
@@ -121,7 +158,7 @@ public class ShadowList extends JavaPlugin implements Listener {
                             getLogger().warning(SQLClosed);
                             mysql.openConnection();
                         }
-                        String insert = String.format("INSERT INTO `%s`.`whitelist` (`name`) VALUES ('%s');", config.getString("MySQL.database"), target);
+                        String insert = String.format("INSERT INTO `%s_whitelist` (`name`) VALUES ('%s');", SQLPrefix, target);
                         mysql.updateSQL(insert);
                         reply.sendMessage(String.format("%s added to whitelist", target));
                     } catch (SQLException ex) {
@@ -146,14 +183,14 @@ public class ShadowList extends JavaPlugin implements Listener {
                         getLogger().warning(SQLClosed);
                         mysql.openConnection();
                     }
-                    String checkQuery = String.format("SELECT * FROM whitelist WHERE name = '%s'", target);
+                    String checkQuery = String.format("SELECT * FROM `%s_whitelist` WHERE name = '%s'", SQLPrefix, target);
                     ResultSet checkRS = mysql.querySQL(checkQuery);
                     if (checkRS.isBeforeFirst()) {
                         checkRS.next();
                         if (checkRS.getString("name") != null) {
-                            String removeQuery = String.format("DELETE FROM whitelist WHERE name = '%s'", target);
+                            String removeQuery = String.format("DELETE FROM %s_whitelist WHERE name = '%s'", target);
                             mysql.updateSQL(removeQuery);
-                            reply.sendMessage(String.format("[%s] Removed %s from whitelist.", PluginName, target));
+                            reply.sendMessage(String.format("[%s] Removed %s from %s_whitelist.", PluginName, SQLPrefix, target));
                         }
                     } else {
                         reply.sendMessage(String.format("[%s] Failed to remove %s. Are you sure they are whitelisted and you spelled it right?", PluginName, target));
@@ -178,15 +215,15 @@ public class ShadowList extends JavaPlugin implements Listener {
                         getLogger().warning(SQLClosed);
                         mysql.openConnection();
                     }
-                    String checkQuery = String.format("SELECT * FROM whitelist WHERE name = '%s'", target);
+                    String checkQuery = String.format("SELECT * FROM `%s_whitelist` WHERE name = '%s'", SQLPrefix, target);
                     ResultSet checkRS = mysql.querySQL(checkQuery);
                     if (checkRS.isBeforeFirst()) {
                         checkRS.next();
                         if (checkRS.getString("name") != null) {
-                            reply.sendMessage(String.format("[%s] %s is not on the whitelist.", PluginName, target));
+                            reply.sendMessage(String.format("[%s] %s is on the whitelist.", PluginName, target));
                         }
                         else {
-                            reply.sendMessage(String.format("[%s] %s is on the whitelist.", PluginName, target));
+                            reply.sendMessage(String.format("[%s] %s is not on the whitelist.", PluginName, target));
                         }
                     } else {
                         reply.sendMessage(String.format("[%s] %s is not on the whitelist.", PluginName, target));
@@ -211,7 +248,7 @@ public class ShadowList extends JavaPlugin implements Listener {
                         mysql.openConnection();
                     }
 
-                    ResultSet select = mysql.querySQL(String.format("SELECT * FROM `%s`.`whitelist`;", config.getString("MySQL.database")));
+                    ResultSet select = mysql.querySQL(String.format("SELECT * FROM `%s`.`%s_whitelist`;", SQLDatabase, SQLPrefix));
 
                     if (select.isBeforeFirst()) {
                         sender.sendMessage(ChatColor.GOLD + "--- Whitelisted Players ---");
@@ -244,7 +281,7 @@ public class ShadowList extends JavaPlugin implements Listener {
     }
     public boolean onCommand(CommandSender sender, Command cmd, String commandLabel, String[] args) {
 
-        if (commandLabel.equalsIgnoreCase("sqlist") || commandLabel.equalsIgnoreCase("sl") || commandLabel.equalsIgnoreCase("wl")) {
+        if (commandLabel.equalsIgnoreCase("wl")) {
             if ((sender instanceof Player && sender.hasPermission("shadowlist.admin")) || !(sender instanceof Player)) {
                 if (args.length > 0) {
                     String para = args[0];
@@ -253,9 +290,14 @@ public class ShadowList extends JavaPlugin implements Listener {
                             addToWhitelistPlayer(sender, args[1]);
                         } else if (para.equalsIgnoreCase("remove")) {
                             removeFromWhitelist(sender, args[1]);
+                        } else if (para.equalsIgnoreCase("check")) {
+                            checkWhitelist(sender, args[1]);
                         }
                     } else if (para.equalsIgnoreCase("list")) {
                         listWhitelist(sender);
+                    } else if (para.equalsIgnoreCase("reload")) {
+                        getLogger().info(String.format("[%s] Reloading Config.", PluginName));
+                        reloadConf();
                     } else if (para.equalsIgnoreCase("help")) {
                         displayHelp(sender);
                     } else {
