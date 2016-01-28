@@ -39,6 +39,8 @@ public class ShadowList extends JavaPlugin implements Listener {
     private static String SQLUser;
     private static String SQLPass;
 
+    private static int rowSize;
+
     private boolean wlEnabled = true;
 
     private List<String> wlist_players;
@@ -59,7 +61,7 @@ public class ShadowList extends JavaPlugin implements Listener {
         SQLPort= getConfig().getString("MySQL.port");
         SQLUser = getConfig().getString("MySQL.username");
         SQLPass = getConfig().getString("MySQL.password");
-
+        rowSize = getConfig().getInt("misc.rowsize");
         try {
             mysql = new MySQL(SQLHostname,  SQLPort, SQLDatabase, SQLUser, SQLPass);
             mysql.openConnection();
@@ -88,6 +90,7 @@ public class ShadowList extends JavaPlugin implements Listener {
         SQLPort= getConfig().getString("MySQL.port");
         SQLUser = getConfig().getString("MySQL.username");
         SQLPass = getConfig().getString("MySQL.password");
+        rowSize = getConfig().getInt("misc.rowsize");
 
         createTable();
     }
@@ -124,6 +127,7 @@ public class ShadowList extends JavaPlugin implements Listener {
             config.set("MySQL.prefix", "mc");
             config.set("MySQL.username", "shadowlist");
             config.set("MySQL.password", "password");
+            config.set("misc.rowsize", 5);
             config.set("whitelist.enabled", false);
             config.set("whitelist.kickmessage", "&4You're not whitelisted on this server. Please visit website.com to apply.");
             config.set("config.version", 1);
@@ -252,13 +256,13 @@ public class ShadowList extends JavaPlugin implements Listener {
 
                     if (select.isBeforeFirst()) {
                         sender.sendMessage(ChatColor.GOLD + "--- Whitelisted Players ---");
-
+                        int perRow = rowSize-1;
                         int rowCount = 0;
                         int totalCount = 0;
                         String whitelistRow = "";
 
                         while (select.next()) {
-                            if (rowCount == 3 || select.isLast()) {
+                            if (rowCount == perRow || select.isLast()) {
                                 whitelistRow = whitelistRow + select.getString("name");
                                 sender.sendMessage(ChatColor.DARK_GREEN + whitelistRow);
                                 rowCount = 0;
