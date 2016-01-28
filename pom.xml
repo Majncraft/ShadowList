@@ -8,10 +8,10 @@
     <name>MySQList</name>
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <main.class>com.huskehhh.mysql.MySQList</main.class>
+        <main.class>net.teamshadowmc.shadowlist.ShadowList</main.class>
     </properties>
     <build>
-        <finalName>${project.name}</finalName>
+        <finalName>ShadowList</finalName>
         <sourceDirectory>${basedir}/src</sourceDirectory>
         <resources>
             <resource>
@@ -46,6 +46,11 @@
             <artifactId>spigot-api</artifactId>
             <version>1.8.7-R0.1-SNAPSHOT</version>
         </dependency>
+        <dependency>
+            <groupId>mysql</groupId>
+            <artifactId>mysql-connector-java</artifactId>
+            <version>5.1.6</version>
+        </dependency>
     </dependencies>
     <repositories>
         <repository>
@@ -58,6 +63,6 @@
         </repository>
     </repositories>
     <description>MySQL Whitelisting plugin</description>
-    <url>https://huskehhh.com/</url>
+    <url>http://teamshadowmc.net/</url>
     <version>1.0.0</version>
 </project>
