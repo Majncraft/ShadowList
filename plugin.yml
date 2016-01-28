@@ -1,12 +1,15 @@
-name: MySQList
-version: 1.4.2
-main: com.huskehhh.mysql.MySQList
-author: -_Husky_-
+name: ShadowList
+version: 1.0
+main: net.teamshadowmc.shadowlist.ShadowList
+author: ["Fayettemat", "-_Husky_-"]
 description: MySQL Whitelisting plugin
 commands:
   sqlist:
     description:
     usage:
-  sl:
+  wl:
+   description:
+   usage:
+  shadowlist:
     description:
     usage:

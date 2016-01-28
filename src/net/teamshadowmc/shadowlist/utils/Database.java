@@ -1,4 +1,4 @@
-package com.huskehhh.mysql;
+package net.teamshadowmc.shadowlist.utils;
 
 import java.sql.Connection;
 import java.sql.ResultSet;

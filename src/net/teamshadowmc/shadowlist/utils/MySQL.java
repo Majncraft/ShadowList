@@ -1,16 +1,15 @@
-package com.huskehhh.mysql.mysql;
+package net.teamshadowmc.shadowlist.utils;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
-
-import com.huskehhh.mysql.Database;
 
 /**
  * Connects to and uses a MySQL database
  * 
  * @author -_Husky_-
  * @author tips48
+ * @author Fayettemat
  */
 public class MySQL extends Database {
 	private final String user;
@@ -57,6 +56,11 @@ public class MySQL extends Database {
 		this.database = database;
 		this.user = username;
 		this.password = password;
+	}
+
+
+	public boolean checkConnection() throws SQLException {
+		return connection != null && !connection.isClosed();
 	}
 
 	@Override
