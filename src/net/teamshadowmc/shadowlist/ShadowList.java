@@ -33,7 +33,7 @@ public class ShadowList extends JavaPlugin implements Listener {
     private static MySQL mysql;
 
     private static String SQLDatabase;
-    private static String SQLPrefix;
+    private static String SQLTable;
     private static String SQLHostname;
     private static String SQLPort;
     private static String SQLUser;
@@ -56,7 +56,7 @@ public class ShadowList extends JavaPlugin implements Listener {
         }
         reloadConfig();
         SQLDatabase = getConfig().getString("MySQL.database");
-        SQLPrefix = getConfig().getString("MySQL.prefix");
+        SQLTable = getConfig().getString("MySQL.table");
         SQLHostname = getConfig().getString("MySQL.hostname");
         SQLPort= getConfig().getString("MySQL.port");
         SQLUser = getConfig().getString("MySQL.username");
@@ -85,7 +85,7 @@ public class ShadowList extends JavaPlugin implements Listener {
     public void reloadConf() {
         reloadConfig();
         SQLDatabase = getConfig().getString("MySQL.database");
-        SQLPrefix = getConfig().getString("MySQL.prefix");
+        SQLTable = getConfig().getString("MySQL.table");
         SQLHostname = getConfig().getString("MySQL.hostname");
         SQLPort= getConfig().getString("MySQL.port");
         SQLUser = getConfig().getString("MySQL.username");
@@ -95,7 +95,7 @@ public class ShadowList extends JavaPlugin implements Listener {
         createTable();
     }
     private void createTable() {
-        final String createSQL = String.format("CREATE TABLE IF NOT EXISTS `%s_whitelist` (`id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,`uuid` varchar(36) DEFAULT NULL,`name` varchar(36) NOT NULL, PRIMARY KEY (`id`), UNIQUE KEY `id` (`id`)) ENGINE=InnoDB AUTO_INCREMENT=7 DEFAULT CHARSET=utf8", SQLPrefix);
+        final String createSQL = String.format("CREATE TABLE IF NOT EXISTS `%s` (`id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,`uuid` varchar(36) DEFAULT NULL,`name` varchar(36) NOT NULL, PRIMARY KEY (`id`), UNIQUE KEY `id` (`id`)) ENGINE=InnoDB AUTO_INCREMENT=7 DEFAULT CHARSET=utf8", SQLTable);
         final BukkitScheduler localScheduler = getServer().getScheduler();
         localScheduler.runTaskAsynchronously(this, new BukkitRunnable() {
             @Override
@@ -124,7 +124,7 @@ public class ShadowList extends JavaPlugin implements Listener {
             config.set("MySQL.hostname", "localhost");
             config.set("MySQL.port", "3306");
             config.set("MySQL.database", "shadowlist");
-            config.set("MySQL.prefix", "mc");
+            config.set("MySQL.table", "mc_whitelist");
             config.set("MySQL.username", "shadowlist");
             config.set("MySQL.password", "password");
             config.set("misc.rowsize", 5);
@@ -162,7 +162,7 @@ public class ShadowList extends JavaPlugin implements Listener {
                             getLogger().warning(SQLClosed);
                             mysql.openConnection();
                         }
-                        String insert = String.format("INSERT INTO `%s_whitelist` (`name`) VALUES ('%s');", SQLPrefix, target);
+                        String insert = String.format("INSERT INTO `%s` (`name`) VALUES ('%s');", SQLTable, target);
                         mysql.updateSQL(insert);
                         reply.sendMessage(String.format("%s added to whitelist", target));
                     } catch (SQLException ex) {
@@ -187,14 +187,14 @@ public class ShadowList extends JavaPlugin implements Listener {
                         getLogger().warning(SQLClosed);
                         mysql.openConnection();
                     }
-                    String checkQuery = String.format("SELECT * FROM `%s_whitelist` WHERE name = '%s'", SQLPrefix, target);
+                    String checkQuery = String.format("SELECT * FROM `%s` WHERE name = '%s'", SQLTable, target);
                     ResultSet checkRS = mysql.querySQL(checkQuery);
                     if (checkRS.isBeforeFirst()) {
                         checkRS.next();
                         if (checkRS.getString("name") != null) {
-                            String removeQuery = String.format("DELETE FROM %s_whitelist WHERE name = '%s'", target);
+                            String removeQuery = String.format("DELETE FROM %s WHERE name = '%s'", SQLTable, target);
                             mysql.updateSQL(removeQuery);
-                            reply.sendMessage(String.format("[%s] Removed %s from %s_whitelist.", PluginName, SQLPrefix, target));
+                            reply.sendMessage(String.format("[%s] Removed %s from %s.", PluginName, SQLTable, target));
                         }
                     } else {
                         reply.sendMessage(String.format("[%s] Failed to remove %s. Are you sure they are whitelisted and you spelled it right?", PluginName, target));
@@ -219,7 +219,7 @@ public class ShadowList extends JavaPlugin implements Listener {
                         getLogger().warning(SQLClosed);
                         mysql.openConnection();
                     }
-                    String checkQuery = String.format("SELECT * FROM `%s_whitelist` WHERE name = '%s'", SQLPrefix, target);
+                    String checkQuery = String.format("SELECT * FROM `%s` WHERE name = '%s'", SQLTable, target);
                     ResultSet checkRS = mysql.querySQL(checkQuery);
                     if (checkRS.isBeforeFirst()) {
                         checkRS.next();
@@ -252,7 +252,7 @@ public class ShadowList extends JavaPlugin implements Listener {
                         mysql.openConnection();
                     }
 
-                    ResultSet select = mysql.querySQL(String.format("SELECT * FROM `%s`.`%s_whitelist`;", SQLDatabase, SQLPrefix));
+                    ResultSet select = mysql.querySQL(String.format("SELECT * FROM `%s`.`%s`;", SQLDatabase, SQLTable));
 
                     if (select.isBeforeFirst()) {
                         sender.sendMessage(ChatColor.GOLD + "--- Whitelisted Players ---");
@@ -372,11 +372,11 @@ public class ShadowList extends JavaPlugin implements Listener {
                             }
                         }
                     } else {
-                        event.setKickMessage(ChatColor.translateAlternateColorCodes('&', config.getString("whitelist.kickmessage")));
+                        event.setKickMessage(ChatColor.translateAlternateColorCodes('&', config.getString("whitelist.kickmessage").replace("\\n", "\n")));
                         event.setLoginResult(AsyncPlayerPreLoginEvent.Result.KICK_WHITELIST);
                     }
                 } else {
-                    event.setKickMessage(ChatColor.translateAlternateColorCodes('&', config.getString("whitelist.kickmessage")));
+                    event.setKickMessage(ChatColor.translateAlternateColorCodes('&', config.getString("whitelist.kickmessage").replace("\\n", "\n")));
                     event.setLoginResult(AsyncPlayerPreLoginEvent.Result.KICK_WHITELIST);
                 }
             } catch (SQLException ex) {
