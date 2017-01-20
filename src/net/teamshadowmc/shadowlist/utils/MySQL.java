@@ -17,6 +17,7 @@ public class MySQL extends Database {
 	private final String password;
 	private final String port;
 	private final String hostname;
+	private final Boolean reconnect;
 
 	/**
 	 * Creates a new MySQL instance
@@ -31,8 +32,8 @@ public class MySQL extends Database {
 	 *            Password
 	 */
 	public MySQL(String hostname, String port, String username,
-			String password) {
-		this(hostname, port, null, username, password);
+			String password, Boolean reconnect) {
+		this(hostname, port, null, username, password, reconnect);
 	}
 
 	/**
@@ -50,12 +51,13 @@ public class MySQL extends Database {
 	 *            Password
 	 */
 	public MySQL(String hostname, String port, String database,
-			String username, String password) {
+			String username, String password, Boolean reconnect) {
 		this.hostname = hostname;
 		this.port = port;
 		this.database = database;
 		this.user = username;
 		this.password = password;
+		this.reconnect = reconnect;
 	}
 
 
@@ -73,9 +75,9 @@ public class MySQL extends Database {
 		String connectionURL = "jdbc:mysql://"
 				+ this.hostname + ":" + this.port;
 		if (database != null) {
-			connectionURL = connectionURL + "/" + this.database;
+			connectionURL = connectionURL + "/" + this.database + "?autoReconnect=" + reconnect;
 		}
-		
+		System.out.println("[# ShadowList DBG] "+connectionURL);
 		Class.forName("com.mysql.jdbc.Driver");
 		connection = DriverManager.getConnection(connectionURL,
 				this.user, this.password);

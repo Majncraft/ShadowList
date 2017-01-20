@@ -38,6 +38,7 @@ public class ShadowList extends JavaPlugin implements Listener {
     private static String SQLPort;
     private static String SQLUser;
     private static String SQLPass;
+    private static boolean SQLReconnect;
 
     private static int rowSize;
 
@@ -61,9 +62,10 @@ public class ShadowList extends JavaPlugin implements Listener {
         SQLPort= getConfig().getString("MySQL.port");
         SQLUser = getConfig().getString("MySQL.username");
         SQLPass = getConfig().getString("MySQL.password");
+        SQLReconnect = getConfig().getBoolean("MySQL.reconnect", true);
         rowSize = getConfig().getInt("misc.rowsize");
         try {
-            mysql = new MySQL(SQLHostname,  SQLPort, SQLDatabase, SQLUser, SQLPass);
+            mysql = new MySQL(SQLHostname,  SQLPort, SQLDatabase, SQLUser, SQLPass, SQLReconnect);
             mysql.openConnection();
             createTable();
         } catch (SQLException ex) {
@@ -90,6 +92,7 @@ public class ShadowList extends JavaPlugin implements Listener {
         SQLPort= getConfig().getString("MySQL.port");
         SQLUser = getConfig().getString("MySQL.username");
         SQLPass = getConfig().getString("MySQL.password");
+        SQLReconnect = getConfig().getBoolean("MySQL.reconnect", true);
         rowSize = getConfig().getInt("misc.rowsize");
 
         createTable();
@@ -127,6 +130,7 @@ public class ShadowList extends JavaPlugin implements Listener {
             config.set("MySQL.table", "mc_whitelist");
             config.set("MySQL.username", "shadowlist");
             config.set("MySQL.password", "password");
+            config.set("MySQL.reconnect", true);
             config.set("misc.rowsize", 5);
             config.set("whitelist.enabled", false);
             config.set("whitelist.kickmessage", "&4You're not whitelisted on this server. Please visit website.com to apply.");
@@ -341,7 +345,7 @@ public class ShadowList extends JavaPlugin implements Listener {
                     getLogger().warning(SQLClosed);
                     mysql.openConnection();
                 }
-                String queryPlayer = String.format("SELECT uuid, name FROM `%s`.`whitelist` WHERE name = '%s'", config.getString("MySQL.database"), joiningPlayer);
+                String queryPlayer = String.format("SELECT uuid, name FROM `%s`.`whitelist` WHERE (name = '%s' OR uuid = '%s')", config.getString("MySQL.database"), joiningPlayer, joiningUUID);
                 ResultSet resultPlayer = mysql.querySQL(queryPlayer);
 
                 if (resultPlayer.isBeforeFirst()) {
